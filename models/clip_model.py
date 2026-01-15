@@ -9,7 +9,6 @@ class CLIPDualEncoder(nn.Module):
     def __init__(self, embed_dim=256):
         super().__init__()
 
-        # ✅ SAFE vision encoder (NO torch.hub)
         weights = ResNet18_Weights.IMAGENET1K_V1
         self.vision_encoder = resnet18(weights=weights)
         self.vision_encoder.fc = nn.Identity()
