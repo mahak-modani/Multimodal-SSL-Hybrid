@@ -39,3 +39,11 @@ class CLIPLightningModule(pl.LightningModule):
     def configure_optimizers(self):
         return torch.optim.AdamW(self.parameters(), lr=self.lr)
 
+    def on_train_end(self):
+      torch.save(
+        self.model.state_dict(),
+        "phase1_clip_model.pth"
+      )
+      print("Saved trained model to phase1_clip_model.pth")
+
+

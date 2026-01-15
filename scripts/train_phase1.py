@@ -4,12 +4,9 @@ from training.lightning_module import CLIPLightningModule
 
 def main():
     data = ImageTextDataModule(
-    dataset_name="conceptual_captions",
+    dataset_name="beans",
     batch_size=32
     )
-
-
-
     data.setup()
 
     model = CLIPLightningModule()
