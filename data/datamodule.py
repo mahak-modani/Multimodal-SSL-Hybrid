@@ -51,11 +51,12 @@ class ImageTextDataModule:
 
     def train_dataloader(self):
         return DataLoader(
-            self.dataset,
-            batch_size=self.batch_size,
-            shuffle=True,
-            collate_fn=self.collate_fn,
-            num_workers=2
+          self.dataset,
+          batch_size=self.batch_size,
+          shuffle=True,
+          collate_fn=self.collate_fn,
+          num_workers=0   
         )
+
 
 
