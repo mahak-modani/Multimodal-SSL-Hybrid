@@ -2,7 +2,7 @@ import torch
 from torch.utils.data import DataLoader
 from datasets import load_dataset
 from transformers import AutoTokenizer
-from data.flickr_dataset import Flickr30kDataset
+from data.dataset import Flickr30kDataset
 import torchvision.transforms as T
 
 
@@ -35,17 +35,17 @@ class ImageTextDataModule:
             raise ValueError("Unsupported dataset")
 
     def collate_fn(self, batch):
-    images = torch.stack([x[0] for x in batch])
-    captions = [x[1] for x in batch]
+      images = torch.stack([x[0] for x in batch])
+      captions = [x[1] for x in batch]
 
-    texts = self.tokenizer(
-        captions,
-        padding=True,
-        truncation=True,
-        return_tensors="pt"
-    )
+      texts = self.tokenizer(
+          captions,
+          padding=True,
+          truncation=True,
+          return_tensors="pt"
+      )
 
-    return images, texts
+      return images, texts
 
 
 
