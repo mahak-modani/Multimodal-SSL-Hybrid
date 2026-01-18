@@ -4,7 +4,7 @@ from training.lightning_module import CLIPLightningModule
 
 def main():
     data = ImageTextDataModule(
-    dataset_name="beans",
+    dataset_name="flickr30k",
     batch_size=32
     )
     data.setup()
