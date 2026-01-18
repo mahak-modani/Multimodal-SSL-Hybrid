@@ -35,28 +35,18 @@ class ImageTextDataModule:
             raise ValueError("Unsupported dataset")
 
     def collate_fn(self, batch):
-      images = torch.stack([
-          self.transform(x["image"]) for x in batch
-      ])
-      # Semantically meaningful captions
-      label_to_caption = {
-        0: "a healthy bean leaf with no visible disease",
-        1: "a bean leaf affected by angular leaf spot disease",
-        2: "a bean leaf infected with bean rust disease"
-      }
+    images = torch.stack([x[0] for x in batch])
+    captions = [x[1] for x in batch]
 
-      captions = [
-        label_to_caption[int(x["labels"])] for x in batch
-      ]
-
-      texts = self.tokenizer(
+    texts = self.tokenizer(
         captions,
         padding=True,
         truncation=True,
         return_tensors="pt"
-      ) 
+    )
 
-      return images, texts
+    return images, texts
+
 
 
     def train_dataloader(self):
