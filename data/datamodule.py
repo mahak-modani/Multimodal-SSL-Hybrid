@@ -28,7 +28,7 @@ class ImageTextDataModule:
     def setup(self):
         if self.dataset_name == "flickr30k":
             self.dataset = Flickr30kDataset(
-                csv_path="/content/drive/MyDrive/Multimodal-SSL-Hybrid/flickr30k_5k.csv",
+                csv_path="flickr30k_5k.csv",
                 transform=self.transform
             )
         else:

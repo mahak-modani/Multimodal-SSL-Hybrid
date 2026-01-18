@@ -7,11 +7,14 @@ from models.clip_model import CLIPDualEncoder
 def retrieval_test():
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
-    data = ImageTextDataModule(dataset_name="beans", batch_size=16)
+    data = ImageTextDataModule(
+    dataset_name="flickr30k",
+    batch_size=16
+    )
+
     data.setup()
     loader = data.train_dataloader()
 
-    # ✅ Load trained model
     model = CLIPDualEncoder().to(device)
     model.load_state_dict(torch.load("phase1_clip_model.pth", map_location=device))
     model.eval()
