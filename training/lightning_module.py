@@ -60,7 +60,15 @@ class CLIPLightningModule(pl.LightningModule):
         )
 
         loss_contrastive = self.contrastive_loss(img_emb, txt_emb)
-        loss_reconstruction = F.mse_loss(recon, images)
+        target = F.interpolate(
+          images,
+          size=recon.shape[-2:],  # match 7x7 or 8x8
+          mode="bilinear",
+          align_corners=False
+        )
+
+        loss_reconstruction = F.mse_loss(recon, target)
+
         loss_total = loss_contrastive + self.recon_weight * loss_reconstruction
 
         self.log("loss_contrastive", loss_contrastive, on_epoch=True)
