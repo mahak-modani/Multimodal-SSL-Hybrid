@@ -2,6 +2,7 @@ import torch
 from torch.utils.data import DataLoader
 from datasets import load_dataset
 from transformers import AutoTokenizer
+from data.flickr_dataset import Flickr30kDataset
 import torchvision.transforms as T
 
 
@@ -23,9 +24,15 @@ class ImageTextDataModule:
             )
         ])
 
+
     def setup(self):
-        self.dataset = load_dataset(self.dataset_name, split="train")
-        self.dataset = self.dataset.shuffle(seed=42).select(range(1000))
+        if self.dataset_name == "flickr30k":
+            self.dataset = Flickr30kDataset(
+                csv_path="/content/drive/MyDrive/Multimodal-SSL-Hybrid/flickr30k_5k.csv",
+                transform=self.transform
+            )
+        else:
+            raise ValueError("Unsupported dataset")
 
     def collate_fn(self, batch):
       images = torch.stack([
