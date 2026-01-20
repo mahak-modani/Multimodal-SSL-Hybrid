@@ -1,14 +1,14 @@
 import torch
 from torch.utils.data import DataLoader
-from datasets import load_dataset
 from transformers import AutoTokenizer
-from data.dataset import Flickr30kDataset
 import torchvision.transforms as T
+
+from data.dataset import Flickr30kDataset
 
 
 class ImageTextDataModule:
-    def __init__(self, dataset_name="beans", batch_size=32):
-        self.dataset_name = dataset_name
+    def __init__(self, csv_path, batch_size=32):
+        self.csv_path = csv_path
         self.batch_size = batch_size
 
         self.tokenizer = AutoTokenizer.from_pretrained(
@@ -24,39 +24,30 @@ class ImageTextDataModule:
             )
         ])
 
-
     def setup(self):
-        if self.dataset_name == "flickr30k":
-            self.dataset = Flickr30kDataset(
-                csv_path="flickr30k_5k.csv",
-                transform=self.transform
-            )
-        else:
-            raise ValueError("Unsupported dataset")
+        self.dataset = Flickr30kDataset(
+            csv_path=self.csv_path,
+            transform=self.transform
+        )
 
     def collate_fn(self, batch):
-      images = torch.stack([x[0] for x in batch])
-      captions = [x[1] for x in batch]
+        images = torch.stack([item[0] for item in batch])
+        captions = [item[1] for item in batch]
 
-      texts = self.tokenizer(
-          captions,
-          padding=True,
-          truncation=True,
-          return_tensors="pt"
-      )
+        texts = self.tokenizer(
+            captions,
+            padding=True,
+            truncation=True,
+            return_tensors="pt"
+        )
 
-      return images, texts
-
-
+        return images, texts
 
     def train_dataloader(self):
         return DataLoader(
-          self.dataset,
-          batch_size=self.batch_size,
-          shuffle=True,
-          collate_fn=self.collate_fn,
-          num_workers=0   
+            self.dataset,
+            batch_size=self.batch_size,
+            shuffle=True,
+            collate_fn=self.collate_fn,
+            num_workers=0
         )
-
-
-

@@ -8,23 +8,27 @@ from utils.results_logger import ResultsLogger
 
 
 class CLIPLightningModule(pl.LightningModule):
-    def __init__(self, mode="contrastive", lr=1e-4, recon_weight=0.5):
-        """
-        mode ∈ {"contrastive", "reconstruction", "hybrid"}
-        """
+    def __init__(
+        self,
+        mode="contrastive",
+        lr=1e-4,
+        recon_weight=0.5,
+        save_dir="results/tmp"
+        ):
         super().__init__()
 
         self.mode = mode
         self.lr = lr
         self.recon_weight = recon_weight
 
+        self.model = CLIPDualEncoder()
+
+        # Results logger
         self.results_logger = ResultsLogger(
-        save_dir=save_dir,
-        filename=f"{mode}_losses.csv"
+            save_dir=save_dir,
+            filename=f"{mode}_losses.csv"
         )
 
-        self.model = CLIPDualEncoder()
-        self.save_hyperparameters()
 
     # ---------- Contrastive loss ----------
     def contrastive_loss(self, img_emb, txt_emb):

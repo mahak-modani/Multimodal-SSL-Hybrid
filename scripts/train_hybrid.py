@@ -4,10 +4,18 @@ import pytorch_lightning as pl
 
 
 def main():
-    data = ImageTextDataModule(dataset_name="flickr30k", batch_size=16)
+    data = ImageTextDataModule(
+      csv_path="flickr30k_1k.csv",
+      batch_size=32
+    )
     data.setup()
 
-    model = CLIPLightningModule(mode="hybrid", recon_weight=0.5)
+    model = CLIPLightningModule(
+      mode="hybrid",
+      recon_weight=0.5,
+      save_dir="results/flickr1k"
+    )
+
 
     trainer = pl.Trainer(
         max_epochs=5,
