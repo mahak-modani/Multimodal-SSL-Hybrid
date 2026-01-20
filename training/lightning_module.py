@@ -13,21 +13,23 @@ class CLIPLightningModule(pl.LightningModule):
         mode="contrastive",
         lr=1e-4,
         recon_weight=0.5,
+        batch_size=32,
         save_dir="results/tmp"
-        ):
+      ):
         super().__init__()
 
         self.mode = mode
         self.lr = lr
         self.recon_weight = recon_weight
+        self.batch_size = batch_size
 
         self.model = CLIPDualEncoder()
 
-        # Results logger
         self.results_logger = ResultsLogger(
             save_dir=save_dir,
             filename=f"{mode}_losses.csv"
         )
+
 
 
     # ---------- Contrastive loss ----------
@@ -140,7 +142,7 @@ class CLIPLightningModule(pl.LightningModule):
         return {
             "training_mode": self.mode,
             "learning_rate": self.lr,
-            "batch_size": self.trainer.datamodule.batch_size,
+            "batch_size": self.batch_size,
             "epochs": self.trainer.max_epochs,
             "optimizer": "AdamW",
             "precision": "16-mixed",

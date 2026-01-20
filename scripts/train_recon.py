@@ -12,6 +12,7 @@ def main():
 
   model = CLIPLightningModule(
     mode="reconstruction",
+    batch_size=32,
     save_dir="results/flickr1k"
   )
 
