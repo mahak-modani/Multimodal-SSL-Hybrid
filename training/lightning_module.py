@@ -89,17 +89,33 @@ class CLIPLightningModule(pl.LightningModule):
 
     def on_train_epoch_end(self):
         m = self.trainer.callback_metrics
+        epoch = self.current_epoch
+
+        loss_c = m.get("loss_contrastive")
+        loss_r = m.get("loss_reconstruction")
+        loss_t = m.get("loss_total")
+
+        self.results_logger.log(
+            epoch,
+            loss_c.item() if loss_c else None,
+            loss_r.item() if loss_r else None,
+            loss_t.item() if loss_t else None
+        )
+
         if self.mode == "contrastive":
-            print(f"[Epoch {self.current_epoch}] loss_total = {m['loss_total']:.4f}")
+            print(f"[Epoch {epoch}] loss_total = {loss_t:.4f}")
         elif self.mode == "reconstruction":
-            print(f"[Epoch {self.current_epoch}] loss_reconstruction = {m['loss_reconstruction']:.4f}")
+            print(f"[Epoch {epoch}] loss_reconstruction = {loss_r:.4f}")
         else:
             print(
-                f"[Epoch {self.current_epoch}] "
-                f"contrastive = {m['loss_contrastive']:.4f} | "
-                f"reconstruction = {m['loss_reconstruction']:.4f} | "
-                f"total = {m['loss_total']:.4f}"
+                f"[Epoch {epoch}] "
+                f"contrastive = {loss_c:.4f} | "
+                f"reconstruction = {loss_r:.4f} | "
+                f"total = {loss_t:.4f}"
             )
+    
+    def on_train_end(self):
+        self.results_logger.close()
 
     def configure_optimizers(self):
         return torch.optim.AdamW(self.parameters(), lr=self.lr)
