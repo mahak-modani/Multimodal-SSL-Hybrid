@@ -121,6 +121,17 @@ class CLIPLightningModule(pl.LightningModule):
     def on_train_end(self):
         self.results_logger.close()
 
+    def on_train_start(self):
+        from utils.run_config import save_run_config
+
+        config = self.get_run_config()
+
+        save_run_config(
+            save_dir=self.results_logger.path.rsplit("/", 1)[0],
+            filename=f"run_config_{self.mode}.json",
+            config_dict=config
+        )
+
     def get_run_config(self):
         total_params = sum(p.numel() for p in self.parameters())
         trainable_params = sum(p.numel() for p in self.parameters() if p.requires_grad)
