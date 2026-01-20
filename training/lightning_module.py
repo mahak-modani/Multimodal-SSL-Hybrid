@@ -118,9 +118,7 @@ class CLIPLightningModule(pl.LightningModule):
                 f"total = {loss_t:.4f}"
             )
     
-    def on_train_end(self):
-        self.results_logger.close()
-
+    
     def on_train_start(self):
         from utils.run_config import save_run_config
 
@@ -131,6 +129,9 @@ class CLIPLightningModule(pl.LightningModule):
             filename=f"run_config_{self.mode}.json",
             config_dict=config
         )
+
+    def on_train_end(self):
+        self.results_logger.close()
 
     def get_run_config(self):
         total_params = sum(p.numel() for p in self.parameters())
