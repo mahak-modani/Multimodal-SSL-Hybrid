@@ -18,6 +18,11 @@ class CLIPLightningModule(pl.LightningModule):
         self.lr = lr
         self.recon_weight = recon_weight
 
+        self.results_logger = ResultsLogger(
+        save_dir=save_dir,
+        filename=f"{mode}_losses.csv"
+        )
+
         self.model = CLIPDualEncoder()
         self.save_hyperparameters()
 
