@@ -121,5 +121,31 @@ class CLIPLightningModule(pl.LightningModule):
     def on_train_end(self):
         self.results_logger.close()
 
+    def get_run_config(self):
+        total_params = sum(p.numel() for p in self.parameters())
+        trainable_params = sum(p.numel() for p in self.parameters() if p.requires_grad)
+
+        return {
+            "training_mode": self.mode,
+            "learning_rate": self.lr,
+            "batch_size": self.trainer.datamodule.batch_size,
+            "epochs": self.trainer.max_epochs,
+            "optimizer": "AdamW",
+            "precision": "16-mixed",
+
+            "image_encoder": "resnet18",
+            "text_encoder": "MiniLM-L6-v2",
+            "projection_dim": 256,
+            "temperature_learnable": True,
+
+            "reconstruction_weight": self.recon_weight if self.mode == "hybrid" else None,
+
+            # PEFT / LoRA placeholders
+            "peft_method": "none",
+            "trainable_parameters": trainable_params,
+            "total_parameters": total_params
+        }
+
+
     def configure_optimizers(self):
         return torch.optim.AdamW(self.parameters(), lr=self.lr)
