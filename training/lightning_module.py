@@ -4,6 +4,7 @@ import torch.nn.functional as F
 
 from models.clip_model import CLIPDualEncoder
 from utils.masking import random_patch_mask
+from utils.results_logger import ResultsLogger
 
 
 class CLIPLightningModule(pl.LightningModule):
