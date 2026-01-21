@@ -1,3 +1,4 @@
+from pytorch_lightning.callbacks import ModelCheckpoint
 from data.datamodule import ImageTextDataModule
 from training.lightning_module import CLIPLightningModule
 import pytorch_lightning as pl
