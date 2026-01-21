@@ -1,29 +1,32 @@
+from pytorch_lightning.callbacks import ModelCheckpoint
 from data.datamodule import ImageTextDataModule
 from training.lightning_module import CLIPLightningModule
-from pytorch_lightning.callbacks import ModelCheckpoint
 import pytorch_lightning as pl
 
 
 def main():
-    dataset_name = "flickr30k"
-    split_name = "1k"   # change to 2k / 5k when needed
-    mode = "hybrid" 
+    split_name = "1k"   # change to 2k / 5k
+    mode = "hybrid"
+
+    save_dir = f"results/flickr{split_name}/{mode}"
 
     data = ImageTextDataModule(
-        dataset_name=dataset_name,
+        dataset_name="flickr30k",
         split=split_name,
         batch_size=32
     )
     data.setup()
 
-    model = CLIPLightningModule(mode=mode)
+    model = CLIPLightningModule(
+        mode=mode,
+        batch_size=32,
+        save_dir=save_dir
+    )
 
     checkpoint_callback = ModelCheckpoint(
         dirpath="checkpoints",
         filename=f"{mode}_flickr{split_name}",
-        save_last=True,
-        save_top_k=1,
-        monitor=None
+        save_last=True
     )
 
     trainer = pl.Trainer(
@@ -31,14 +34,11 @@ def main():
         accelerator="gpu",
         devices=1,
         precision="16-mixed",
-        callbacks=[checkpoint_callback],
-        log_every_n_steps=10
+        callbacks=[checkpoint_callback]
     )
 
     trainer.fit(model, data.train_dataloader())
 
 
-
 if __name__ == "__main__":
     main()
-
