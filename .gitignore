@@ -273,3 +273,12 @@ Thumbs.db
 # Logs
 # ========================
 *.log
+
+
+
+# Datasets
+coco/
+flickr30k_images/
+
+# Large checkpoints (optional)
+*.ckpt
