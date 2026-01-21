@@ -1,3 +1,5 @@
+import os
+import json
 import torch
 import pytorch_lightning as pl
 import torch.nn.functional as F
@@ -15,22 +17,24 @@ class CLIPLightningModule(pl.LightningModule):
         recon_weight=0.5,
         batch_size=32,
         save_dir="results/tmp"
-      ):
+    ):
         super().__init__()
 
         self.mode = mode
         self.lr = lr
         self.recon_weight = recon_weight
         self.batch_size = batch_size
+        self.save_dir = save_dir
+
+        os.makedirs(self.save_dir, exist_ok=True)
 
         self.model = CLIPDualEncoder()
 
+        # CSV logger (epoch-level)
         self.results_logger = ResultsLogger(
-            save_dir=save_dir,
-            filename=f"{mode}_losses.csv"
+            save_dir=self.save_dir,
+            filename="training_metrics.csv"
         )
-
-
 
     # ---------- Contrastive loss ----------
     def contrastive_loss(self, img_emb, txt_emb):
@@ -93,6 +97,7 @@ class CLIPLightningModule(pl.LightningModule):
 
         return loss
 
+    # ---------- Epoch logging ----------
     def on_train_epoch_end(self):
         m = self.trainer.callback_metrics
         epoch = self.current_epoch
@@ -102,12 +107,13 @@ class CLIPLightningModule(pl.LightningModule):
         loss_t = m.get("loss_total")
 
         self.results_logger.log(
-            epoch,
-            loss_c.item() if loss_c else None,
-            loss_r.item() if loss_r else None,
-            loss_t.item() if loss_t else None
+            epoch=epoch,
+            loss_contrastive=loss_c.item() if loss_c else None,
+            loss_reconstruction=loss_r.item() if loss_r else None,
+            loss_total=loss_t.item() if loss_t else None
         )
 
+        # Minimal console logging (paper-safe)
         if self.mode == "contrastive":
             print(f"[Epoch {epoch}] loss_total = {loss_t:.4f}")
         elif self.mode == "reconstruction":
@@ -119,18 +125,13 @@ class CLIPLightningModule(pl.LightningModule):
                 f"reconstruction = {loss_r:.4f} | "
                 f"total = {loss_t:.4f}"
             )
-    
-    
-    def on_train_start(self):
-        from utils.run_config import save_run_config
 
+    # ---------- Config saving ----------
+    def on_train_start(self):
         config = self.get_run_config()
 
-        save_run_config(
-            save_dir=self.results_logger.path.rsplit("/", 1)[0],
-            filename=f"run_config_{self.mode}.json",
-            config_dict=config
-        )
+        with open(os.path.join(self.save_dir, "run_config.json"), "w") as f:
+            json.dump(config, f, indent=4)
 
     def on_train_end(self):
         self.results_logger.close()
@@ -152,14 +153,15 @@ class CLIPLightningModule(pl.LightningModule):
             "projection_dim": 256,
             "temperature_learnable": True,
 
-            "reconstruction_weight": self.recon_weight if self.mode == "hybrid" else None,
+            "reconstruction_weight": (
+                self.recon_weight if self.mode == "hybrid" else None
+            ),
 
             # PEFT / LoRA placeholders
             "peft_method": "none",
             "trainable_parameters": trainable_params,
             "total_parameters": total_params
         }
-
 
     def configure_optimizers(self):
         return torch.optim.AdamW(self.parameters(), lr=self.lr)
