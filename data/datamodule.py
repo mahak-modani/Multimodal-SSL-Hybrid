@@ -7,8 +7,14 @@ from data.dataset import Flickr30kDataset
 
 
 class ImageTextDataModule:
-    def __init__(self, csv_path, batch_size=32):
+    def __init__(
+        self,
+        csv_path,
+        image_root,
+        batch_size=32
+      ):
         self.csv_path = csv_path
+        self.image_root = image_root
         self.batch_size = batch_size
 
         self.tokenizer = AutoTokenizer.from_pretrained(
@@ -26,13 +32,15 @@ class ImageTextDataModule:
 
     def setup(self):
         self.dataset = Flickr30kDataset(
-            csv_path=self.csv_path,
-            transform=self.transform
-        )
+        csv_path=self.csv_path,
+        image_root=self.image_root,
+        transform=self.transform
+      )
+
 
     def collate_fn(self, batch):
-        images = torch.stack([item[0] for item in batch])
-        captions = [item[1] for item in batch]
+        images = torch.stack([x[0] for x in batch])
+        captions = [x[1] for x in batch]
 
         texts = self.tokenizer(
             captions,

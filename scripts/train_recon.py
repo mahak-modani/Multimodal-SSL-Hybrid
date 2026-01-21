@@ -4,14 +4,14 @@ import pytorch_lightning as pl
 
 
 def main():
-    split_name = "1k"
+    split = "1k"          # change to 2k / 5k
     mode = "reconstruction"
 
-    save_dir = f"results/flickr{split_name}/{mode}"
+    csv_path = f"flickr30k_{split}.csv"
+    save_dir = f"results/flickr30k/{split}/{mode}"
 
     data = ImageTextDataModule(
-        dataset_name="flickr30k",
-        split=split_name,
+        csv_path=csv_path,
         batch_size=32
     )
     data.setup()

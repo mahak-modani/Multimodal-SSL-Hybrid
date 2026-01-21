@@ -5,14 +5,14 @@ import pytorch_lightning as pl
 
 
 def main():
-    split_name = "1k"   # change to 2k / 5k
+    split = "1k"          # change to 2k / 5k
     mode = "hybrid"
 
-    save_dir = f"results/flickr{split_name}/{mode}"
+    csv_path = f"flickr30k_{split}.csv"
+    save_dir = f"results/flickr30k/{split}/{mode}"
 
     data = ImageTextDataModule(
-        dataset_name="flickr30k",
-        split=split_name,
+        csv_path=csv_path,
         batch_size=32
     )
     data.setup()
@@ -25,8 +25,9 @@ def main():
 
     checkpoint_callback = ModelCheckpoint(
         dirpath="checkpoints",
-        filename=f"{mode}_flickr{split_name}",
-        save_last=True
+        filename=f"{mode}_flickr{split}",
+        save_last=True,
+        save_top_k=1
     )
 
     trainer = pl.Trainer(
@@ -34,7 +35,8 @@ def main():
         accelerator="gpu",
         devices=1,
         precision="16-mixed",
-        callbacks=[checkpoint_callback]
+        callbacks=[checkpoint_callback],
+        log_every_n_steps=10
     )
 
     trainer.fit(model, data.train_dataloader())

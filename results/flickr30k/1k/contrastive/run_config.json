@@ -1,0 +1,16 @@
+{
+    "training_mode": "contrastive",
+    "learning_rate": 0.0001,
+    "batch_size": 32,
+    "epochs": 5,
+    "optimizer": "AdamW",
+    "precision": "16-mixed",
+    "image_encoder": "resnet18",
+    "text_encoder": "MiniLM-L6-v2",
+    "projection_dim": 256,
+    "temperature_learnable": true,
+    "reconstruction_weight": null,
+    "peft_method": "none",
+    "trainable_parameters": 35594948,
+    "total_parameters": 35594948
+}

@@ -107,10 +107,10 @@ class CLIPLightningModule(pl.LightningModule):
         loss_t = m.get("loss_total")
 
         self.results_logger.log(
-            epoch=epoch,
-            loss_contrastive=loss_c.item() if loss_c else None,
-            loss_reconstruction=loss_r.item() if loss_r else None,
-            loss_total=loss_t.item() if loss_t else None
+            epoch,
+            loss_c.item() if loss_c is not None else None,
+            loss_r.item() if loss_r is not None else None,
+            loss_t.item() if loss_t is not None else None
         )
 
         # Minimal console logging (paper-safe)

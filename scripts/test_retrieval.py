@@ -1,45 +1,50 @@
-import json
 import torch
 from data.datamodule import ImageTextDataModule
-from models.clip_model import CLIPDualEncoder
+from training.lightning_module import CLIPLightningModule
 
 
 @torch.no_grad()
-def retrieval_test(csv_path, checkpoint_path, output_path):
+def retrieval_test(
+    csv_path,
+    image_root,
+    checkpoint_path,
+    batch_size=16
+):
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
+    # Load data
     data = ImageTextDataModule(
         csv_path=csv_path,
-        batch_size=16
+        image_root=image_root,
+        batch_size=batch_size
     )
     data.setup()
     loader = data.train_dataloader()
 
-    model = CLIPDualEncoder().to(device)
-    ckpt = torch.load(checkpoint_path, map_location=device)
-    model.load_state_dict(ckpt["state_dict"])
+    # Load Lightning model
+    model = CLIPLightningModule.load_from_checkpoint(
+        checkpoint_path,
+        mode="contrastive"
+    ).to(device)
     model.eval()
+
+    clip = model.model  # underlying CLIPDualEncoder
 
     images, texts = next(iter(loader))
     images = images.to(device)
     texts = {k: v.to(device) for k, v in texts.items()}
 
-    img_emb, txt_emb = model(images, texts)
+    img_emb, txt_emb = clip(images, texts)
     sims = img_emb @ txt_emb.T
     preds = sims.argmax(dim=1)
 
-    recall = (preds == torch.arange(len(preds), device=device)).float().mean().item()
-
-    with open(output_path, "w") as f:
-        json.dump({"Recall@1": recall}, f, indent=4)
-
-    print(f"Recall@1: {recall:.3f}")
-    print(f"Saved to {output_path}")
+    recall = (preds == torch.arange(len(preds), device=device)).float().mean()
+    print(f"Recall@1 (batch): {recall.item():.3f}")
 
 
 if __name__ == "__main__":
     retrieval_test(
-        csv_path="flickr30k_1k.csv",
-        checkpoint_path="checkpoints/contrastive_flickr1k.ckpt",
-        output_path="results/flickr1k/contrastive/retrieval.json"
+        csv_path="coco_val_1p.csv",
+        image_root="/content/drive/MyDrive/coco/val2017",
+        checkpoint_path="checkpoints/hybrid_flickr1k.ckpt"
     )
